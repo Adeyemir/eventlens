@@ -1,14 +1,10 @@
 # EventLens
 
-EventLens explores a specific trading question: **what happens if a BTC perpetual position and a 15-minute BTC prediction contract settle at the same price?** It puts the two payoffs on one chart and makes the gap between a settlement hedge and actual liquidation risk visible.
+**A read-only BTC perp and prediction hedge workbench for Solana.**
 
-Built for the [Solana Perps and Prediction Markets hackathon](https://hackathons.solana.com/hackathons/perps-and-prediction-markets).
+EventLens answers one practical question: if a BTC perpetual position moves against you, how much could a short-lived BTC prediction contract offset **at settlement**? It shows the payoff alongside the risk that the perp liquidates before the prediction pays. Built for the [Solana Perps and Prediction Markets hackathon](https://hackathons.solana.com/hackathons/perps-and-prediction-markets).
 
-## Current state
-
-EventLens is a read-only scenario workbench. The BTC chart shows live Bitstamp spot prices and candles. The market list shows indicative Jupiter Forecast quotes when a Jupiter API key is configured. Perp size, entry, collateral, maintenance rate, prediction stake, and the round's opening reference price are editable assumptions. No wallet is connected and no orders are placed.
-
-## Run locally
+## Try it locally
 
 ```bash
 npm ci
@@ -16,22 +12,33 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). The scenario workbench and BTC chart work without a key. To load Jupiter Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), set `JUPITER_API_KEY` in `.env.local`, and restart the server. The key stays on the server; `.env.local` is ignored by Git.
+Open [localhost:3000](http://localhost:3000). The BTC chart and scenario controls work without a key. To load Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), put it in `.env.local` as `JUPITER_API_KEY`, and restart the server. To import Velocity positions, `SOLANA_RPC_URL` can point to a mainnet RPC; the example uses Solana's public endpoint. API keys stay server-side, and `.env.local` is ignored by Git.
 
-## What the numbers mean
+## What works
 
-| Input | Source today | Role |
-| --- | --- | --- |
-| BTC spot price and candles | [Bitstamp BTC/USD](https://www.bitstamp.net/api/) | Live market context; never a simulated feed |
-| 15-minute UP/DOWN contract quote | [Jupiter Forecast](https://developers.jup.ag/docs/prediction/forecast) | Indicative contract price, not an executable order quote |
-| Perp position and margin | Editable scenario | Illustrates exposure; not a wallet position or venue risk calculation |
-| Forecast opening BTC price | Manually entered and must be verified for the chosen round | Determines which contract wins at settlement |
+1. **Read a real position.** Enter a public Solana wallet address and Velocity subaccount number. EventLens reads its BTC-PERP size, side, entry, oracle price, unrealized P&L, funding P&L, account collateral, maintenance requirement, and health from Velocity's onchain SDK. No signature or private key is requested. The imported size, side, and entry become editable scenario inputs.
+2. **Inspect BTC and Forecast.** The chart uses live [Bitstamp BTC/USD](https://www.bitstamp.net/api/) spot trades and candles. [Jupiter Forecast](https://developers.jup.ag/docs/prediction/forecast) supplies scheduled and live 15-minute BTC UP/DOWN rounds; a live side is queried for an indicative contract quote when selected. A missing feed stays missing in the UI.
+3. **Size an offset.** The hedge panel chooses DOWN for a long perp or UP for a short one. It models an adverse close at least 3% from current spot that crosses the round's opening line, then sizes a $5–$250 stake against that price move. It shows the perp change alone, the change with a winning contract, and the maximum contract loss.
 
-Perp P&L is signed BTC size multiplied by the change from entry to closing price. A winning prediction contract pays $1 per contract; a losing one pays $0. The payoff chart adds those results at each hypothetical close. Its margin buffer uses an **assumed** maintenance rate.
+The opening BTC reference must be entered and checked by the user for the **specific** Forecast round. Jupiter's public response currently used here does not provide a verified opening value. EventLens labels the result as scenario sizing until a live quote and user-checked reference are present. It never substitutes Bitstamp spot for Jupiter's [Chainlink BTC/USD settlement source](https://data.chain.link/streams/btc-usd).
 
-Jupiter's BTC Forecast rounds settle against **Chainlink BTC/USD**. Bitstamp spot is a separate feed and can differ from the settlement reference. The model also excludes funding, fees, slippage, and liquidation before settlement. A prediction payout cannot be counted on to keep a perp position open while the round is running.
+## Model boundaries
 
-If either live feed is unavailable, the UI reports that state instead of inventing a price. The example scenario remains usable offline.
+- The payoff chart uses `signed BTC size × (close − entry)` for perp P&L and `stake / contract price × payout − stake` for the binary contract. UP wins at or above the round's opening price; DOWN wins below it.
+- The hedge stake aims to offset the **incremental price move from current Bitstamp spot** at one adverse close. A winning contract pays `stake × (1 / price − 1)`; the draft stake is `loss × price / (1 − price)`, bounded by Jupiter Forecast's $5–$250 Prediction API order range.
+- The imported Velocity health and collateral apply to the **whole subaccount**. The separate scenario margin buffer uses a user-entered maintenance rate and is not Velocity's liquidation calculation.
+- Funding, fees, slippage, changing quotes, and liquidation along the price path are not included in settlement payoff estimates. A prediction payout cannot serve as perp collateral before settlement.
+- This app constructs and submits **no orders**. Quotes in the market view are indicative, not executable prices for a selected stake.
+
+## Project map
+
+| Path | Purpose |
+| --- | --- |
+| `src/app/api/candles` | Bitstamp spot ticker and OHLC feed |
+| `src/app/api/markets` | Server-side Jupiter Forecast discovery and market detail |
+| `src/app/api/position` | Read-only Velocity mainnet position lookup |
+| `src/lib/scenario.ts` | Settlement payoff and illustrative margin |
+| `src/lib/hedge.ts` | Adverse-side sizing |
 
 ## Verify
 
@@ -41,9 +48,4 @@ npm run test:math
 npm run build
 ```
 
-## Next build milestones
-
-1. Read a real BTC perp position and venue account health from a public wallet address.
-2. Bind an active Forecast round to its verified opening reference and closing time.
-3. Show a sized hedge proposal with before-and-after outcomes and liquidation timing warnings.
-4. Prepare a reproducible demo and hackathon submission. Order execution, if added, will require separate wallet signing and an executable quote.
+For the product walkthrough and concise submission copy, see [demo runbook](docs/DEMO.md) and [submission draft](docs/SUBMISSION.md).

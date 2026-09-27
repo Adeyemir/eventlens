@@ -57,7 +57,7 @@ function TradingChart({ candles, style }: { candles: BtcCandle[]; style: ChartSt
       ? chart.addSeries(CandlestickSeries, {
           upColor: "#16a76d", downColor: "#dc5c61", borderVisible: false,
           wickUpColor: "#16a76d", wickDownColor: "#dc5c61",
-          priceLineVisible: true,
+          priceLineVisible: true, priceLineColor: "#666666",
         })
       : chart.addSeries(LineSeries, {
           color: "#1b1b1b", lineWidth: 2, priceLineVisible: true,
@@ -82,7 +82,7 @@ function TradingChart({ candles, style }: { candles: BtcCandle[]; style: ChartSt
     volume.setData(candles.map((candle) => ({
       time: candle.time as UTCTimestamp,
       value: candle.volume,
-      color: candle.close >= candle.open ? "#c7e8d7" : "#f2d2d3",
+      color: "#d9d9d9",
     })));
 
     chart.timeScale().fitContent();
