@@ -25,7 +25,13 @@ const priceFormat = new Intl.NumberFormat("en-US", {
 });
 
 function signedUsd(value: number) {
-  return `${value >= 0 ? "+" : "−"}${usd.format(Math.abs(value))}`;
+  if (Math.abs(value) < 0.005) return usd.format(0);
+  return `${value > 0 ? "+" : "−"}${usd.format(Math.abs(value))}`;
+}
+
+function pnlTone(value: number) {
+  if (Math.abs(value) < 0.005) return "";
+  return value > 0 ? "pnl-positive" : value < 0 ? "pnl-negative" : "";
 }
 
 function formatTime(value: number | string | null) {
@@ -425,7 +431,7 @@ export default function EventLensApp() {
               <div><span>BTC-PERP</span><strong>{livePosition.direction.toUpperCase()} {livePosition.sizeBtc} BTC</strong><small>Entry {priceFormat.format(livePosition.entryPriceUsd)} · oracle {priceFormat.format(livePosition.oraclePriceUsd)}</small></div>
               <div><span>ACCOUNT HEALTH</span><strong>{livePosition.accountHealth}/100</strong><small>Velocity maintenance health</small></div>
               <div><span>ACCOUNT COLLATERAL</span><strong>{usd.format(livePosition.accountCollateralUsd)}</strong><small>Maintenance requirement {usd.format(livePosition.accountMaintenanceUsd)}</small></div>
-              <div><span>BTC POSITION P&L</span><strong>{signedUsd(livePosition.unrealizedPnlUsd)}</strong><small>Includes {signedUsd(livePosition.fundingPnlUsd)} funding · read {new Date(livePosition.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>
+              <div><span>BTC POSITION P&L</span><strong className={pnlTone(livePosition.unrealizedPnlUsd)}>{signedUsd(livePosition.unrealizedPnlUsd)}</strong><small>Includes <b className={pnlTone(livePosition.fundingPnlUsd)}>{signedUsd(livePosition.fundingPnlUsd)}</b> funding · read {new Date(livePosition.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>
             </div>}
             {livePosition && <p className="position-caveat">Health and collateral are for the entire Velocity subaccount. The scenario below remains a simplified BTC-only settlement model; its margin buffer is not the venue&apos;s liquidation calculation.</p>}
           </div>
@@ -463,9 +469,9 @@ export default function EventLensApp() {
               </div>
 
               <div className="metric-grid">
-                <div className="metric-card"><span>PERP P&L</span><strong className={selected.perpPnl >= 0 ? "positive" : "negative"}>{signedUsd(selected.perpPnl)}</strong><small>{inputs.direction.toUpperCase()} {inputs.positionSizeBtc} BTC</small></div>
-                <div className="metric-card"><span>PREDICTION P&L</span><strong className={selected.predictionPnl >= 0 ? "positive" : "negative"}>{signedUsd(selected.predictionPnl)}</strong><small>{selected.predictionWins ? "Contract wins" : "Contract expires at $0"}</small></div>
-                <div className="metric-card metric-highlight"><span>COMBINED P&L</span><strong className={selected.combinedPnl >= 0 ? "positive" : "negative"}>{signedUsd(selected.combinedPnl)}</strong><small>Before fees and funding</small></div>
+                <div className="metric-card"><span>PERP P&L</span><strong className={pnlTone(selected.perpPnl)}>{signedUsd(selected.perpPnl)}</strong><small>{inputs.direction.toUpperCase()} {inputs.positionSizeBtc} BTC</small></div>
+                <div className="metric-card"><span>PREDICTION P&L</span><strong className={pnlTone(selected.predictionPnl)}>{signedUsd(selected.predictionPnl)}</strong><small>{selected.predictionWins ? "Contract wins" : "Contract expires at $0"}</small></div>
+                <div className="metric-card metric-highlight"><span>COMBINED P&L</span><strong className={pnlTone(selected.combinedPnl)}>{signedUsd(selected.combinedPnl)}</strong><small>Before fees and funding</small></div>
               </div>
 
               <section id="hedge" className="panel hedge-panel">
@@ -474,8 +480,8 @@ export default function EventLensApp() {
                 {currentSpotPrice && inputs.predictionSide !== adverseSide(inputs.direction) && <p className="hedge-empty">A {inputs.direction.toUpperCase()} perp loses when BTC moves {adverseSide(inputs.direction).toUpperCase()}. Select that prediction side to size the offset.</p>}
                 {currentSpotPrice && inputs.predictionSide === adverseSide(inputs.direction) && proposal && <>
                   <div className="hedge-topline"><div><span>INDICATIVE STAKE</span><strong>{usd.format(proposal.stakeUsd)}</strong><small>Buy {proposal.side.toUpperCase()} at {usd.format(inputs.predictionPrice)} per contract · about {proposal.contracts.toFixed(2)} contracts</small></div><div className="hedge-target"><span>ADVERSE CLOSE</span><strong>{priceFormat.format(proposal.adverseCloseUsd)}</strong><small>{proposal.adverseMovePercent.toFixed(1)}% move from current Bitstamp spot, crossing the round line</small></div></div>
-                  <div className="hedge-comparison"><div><span>Perp change from now</span><strong>{signedUsd(proposal.perpChangeUsd)}</strong></div><span className="comparison-arrow">→</span><div><span>With winning contract</span><strong>{signedUsd(proposal.combinedChangeUsd)}</strong></div></div>
-                  <p className="hedge-detail">Winning contract gain {signedUsd(proposal.winningPredictionPnlUsd)} · covers {Math.round(proposal.coveragePercent)}% of this modeled move. Maximum contract loss is the {usd.format(proposal.stakeUsd)} stake.{proposal.cappedByOrderLimit ? " The $250 Forecast order cap leaves part of this move unhedged." : ""}</p>
+                  <div className="hedge-comparison"><div><span>Perp change from now</span><strong className={pnlTone(proposal.perpChangeUsd)}>{signedUsd(proposal.perpChangeUsd)}</strong></div><span className="comparison-arrow">→</span><div><span>With winning contract</span><strong className={pnlTone(proposal.combinedChangeUsd)}>{signedUsd(proposal.combinedChangeUsd)}</strong></div></div>
+                  <p className="hedge-detail">Winning contract gain <b className={pnlTone(proposal.winningPredictionPnlUsd)}>{signedUsd(proposal.winningPredictionPnlUsd)}</b> · covers {Math.round(proposal.coveragePercent)}% of this modeled move. Maximum contract loss is the {usd.format(proposal.stakeUsd)} stake.{proposal.cappedByOrderLimit ? " The $250 Forecast order cap leaves part of this move unhedged." : ""}</p>
                   <button className="text-button hedge-apply" type="button" onClick={() => { update("predictionStakeUsd", proposal.stakeUsd); setSelectedPrice(Math.round(proposal.adverseCloseUsd)); setChartView("payoff"); }}>Apply stake to payoff chart ↗</button>
                 </>}
                 {currentSpotPrice && inputs.predictionSide === adverseSide(inputs.direction) && !proposal && <p className="hedge-empty">Enter a valid position size, opening price, and contract price to size this draft.</p>}
@@ -491,7 +497,7 @@ export default function EventLensApp() {
                     const result = calculateScenario(inputs, card.price);
                     return <button key={card.label} className="outcome-row" onClick={() => { priceEditedRef.current = true; setSelectedPrice(Math.round(card.price)); }}>
                       <span><strong>{card.label}</strong><small>{priceFormat.format(card.price)}</small></span>
-                      <span className={result.combinedPnl >= 0 ? "positive" : "negative"}>{signedUsd(result.combinedPnl)}</span>
+                      <span className={pnlTone(result.combinedPnl)}>{signedUsd(result.combinedPnl)}</span>
                       <span className="row-arrow">↗</span>
                     </button>;
                   })}
