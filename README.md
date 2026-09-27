@@ -4,6 +4,8 @@
 
 EventLens answers one practical question: if a BTC perpetual position moves against you, how much could a short-lived BTC prediction contract offset **at settlement**? It shows the payoff alongside the risk that the perp liquidates before the prediction pays. Built for the [Solana Perps and Prediction Markets hackathon](https://hackathons.solana.com/hackathons/perps-and-prediction-markets).
 
+**Live demo:** [eventlens-nu.vercel.app](https://eventlens-nu.vercel.app)
+
 ## Try it locally
 
 ```bash

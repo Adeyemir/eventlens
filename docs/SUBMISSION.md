@@ -28,4 +28,6 @@ EventLens does not execute trades, quote a stake-specific order, or independentl
 
 ## Demo
 
-Add the deployed app URL and video URL after they exist. Follow [DEMO.md](DEMO.md) to record the walkthrough.
+Live app: [eventlens-nu.vercel.app](https://eventlens-nu.vercel.app)
+
+Add the video URL after recording. Follow [DEMO.md](DEMO.md) for the walkthrough.
