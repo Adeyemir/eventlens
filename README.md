@@ -1,36 +1,49 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EventLens
 
-## Getting Started
+EventLens explores a specific trading question: **what happens if a BTC perpetual position and a 15-minute BTC prediction contract settle at the same price?** It puts the two payoffs on one chart and makes the gap between a settlement hedge and actual liquidation risk visible.
 
-First, run the development server:
+Built for the [Solana Perps and Prediction Markets hackathon](https://hackathons.solana.com/hackathons/perps-and-prediction-markets).
+
+## Current state
+
+EventLens is a read-only scenario workbench. The BTC chart shows live Bitstamp spot prices and candles. The market list shows indicative Jupiter Forecast quotes when a Jupiter API key is configured. Perp size, entry, collateral, maintenance rate, prediction stake, and the round's opening reference price are editable assumptions. No wallet is connected and no orders are placed.
+
+## Run locally
 
 ```bash
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [localhost:3000](http://localhost:3000). The scenario workbench and BTC chart work without a key. To load Jupiter Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), set `JUPITER_API_KEY` in `.env.local`, and restart the server. The key stays on the server; `.env.local` is ignored by Git.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## What the numbers mean
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Input | Source today | Role |
+| --- | --- | --- |
+| BTC spot price and candles | [Bitstamp BTC/USD](https://www.bitstamp.net/api/) | Live market context; never a simulated feed |
+| 15-minute UP/DOWN contract quote | [Jupiter Forecast](https://developers.jup.ag/docs/prediction/forecast) | Indicative contract price, not an executable order quote |
+| Perp position and margin | Editable scenario | Illustrates exposure; not a wallet position or venue risk calculation |
+| Forecast opening BTC price | Manually entered and must be verified for the chosen round | Determines which contract wins at settlement |
 
-## Learn More
+Perp P&L is signed BTC size multiplied by the change from entry to closing price. A winning prediction contract pays $1 per contract; a losing one pays $0. The payoff chart adds those results at each hypothetical close. Its margin buffer uses an **assumed** maintenance rate.
 
-To learn more about Next.js, take a look at the following resources:
+Jupiter's BTC Forecast rounds settle against **Chainlink BTC/USD**. Bitstamp spot is a separate feed and can differ from the settlement reference. The model also excludes funding, fees, slippage, and liquidation before settlement. A prediction payout cannot be counted on to keep a perp position open while the round is running.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+If either live feed is unavailable, the UI reports that state instead of inventing a price. The example scenario remains usable offline.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Verify
 
-## Deploy on Vercel
+```bash
+npm run lint
+npm run test:math
+npm run build
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Next build milestones
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Read a real BTC perp position and venue account health from a public wallet address.
+2. Bind an active Forecast round to its verified opening reference and closing time.
+3. Show a sized hedge proposal with before-and-after outcomes and liquidation timing warnings.
+4. Prepare a reproducible demo and hackathon submission. Order execution, if added, will require separate wallet signing and an executable quote.
