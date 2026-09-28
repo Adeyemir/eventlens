@@ -7,6 +7,12 @@
 3. Have a public wallet address with an open Velocity BTC-PERP position ready, or use the editable scenario and state clearly that it is hypothetical. Do not expose a private key or seed phrase.
 4. Refresh Forecast rounds. If no side is live, show the next scheduled round and describe the pricing and opening-reference gate. Do not present a scheduled side as tradable.
 
+## Current devnet position
+
+Select **Devnet** in the position import form, enter wallet `6qErjjbUwpvQmLyNknk3ZR58b64NvJaHM3b52WJrDkap` and subaccount `0`, then choose **Import position**. This account holds a long `0.0001 BTC-PERP` position. The import endpoint returned the position successfully on September 28, 2026. Run `node scripts/devnet-inspect.mjs` to check its current state before recording.
+
+The local signing key is in ignored `.local/devnet-demo-keypair.json`; show only the public wallet address. The script wallet is separate from a browser wallet. Devnet SOL funds the Velocity demo; Jupiter Forecast order execution uses mainnet USDC and requires a separate live test.
+
 ## 90-second walkthrough
 
 | Time | Action | Point to make |

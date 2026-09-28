@@ -5,18 +5,19 @@ import {
   calculateEntryPrice,
   convertToNumber,
   decodeName,
-  initialize,
   PRICE_PRECISION,
   QUOTE_PRECISION,
+  configs,
   VELOCITY_PROGRAM_ID,
   VelocityClient,
   VelocityCore,
 } from "@velocity-exchange/sdk/lib/node/index.js";
 
-initialize({ env: "mainnet-beta" });
+export type VelocityNetwork = "devnet" | "mainnet-beta";
 
 export type VelocityPosition = {
-  source: "Velocity mainnet";
+  source: "Velocity devnet" | "Velocity mainnet";
+  network: VelocityNetwork;
   owner: string;
   subAccountId: number;
   accountPda: string;
@@ -57,10 +58,13 @@ export function parseVelocityLookup(owner: string, subAccountId: number) {
 export async function loadVelocityPosition(
   owner: PublicKey,
   subAccountId: number,
+  network: VelocityNetwork = "mainnet-beta",
 ): Promise<VelocityLookup> {
-  const rpcUrl = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
+  const rpcUrl = network === "devnet"
+    ? process.env.DEVNET_RPC_URL || "https://api.devnet.solana.com"
+    : process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
   const connection = new Connection(rpcUrl, "confirmed");
-  const programId = new PublicKey(VELOCITY_PROGRAM_ID);
+  const programId = new PublicKey(configs[network].VELOCITY_PROGRAM_ID || VELOCITY_PROGRAM_ID);
   const accountPda = VelocityCore.pdas.getUserAccountPublicKeySync(
     programId,
     owner,
@@ -84,7 +88,7 @@ export async function loadVelocityPosition(
       },
     },
     authority: owner,
-    env: "mainnet-beta",
+    env: network,
     subAccountIds: [subAccountId],
     activeSubAccountId: subAccountId,
     accountSubscription: {
@@ -114,7 +118,8 @@ export async function loadVelocityPosition(
       PRICE_PRECISION,
     );
     const result: VelocityPosition = {
-      source: "Velocity mainnet",
+      source: network === "devnet" ? "Velocity devnet" : "Velocity mainnet",
+      network,
       owner: owner.toBase58(),
       subAccountId,
       accountPda: accountPda.toBase58(),

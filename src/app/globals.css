@@ -55,11 +55,11 @@ main { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 .position-panel { display: grid; grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr); gap: 20px 28px; margin-bottom: 18px; padding: 22px; }
 .position-panel-copy h3 { margin: 6px 0 5px; font-size: 16px; letter-spacing: -.3px; }
 .position-panel-copy p { max-width: 310px; margin: 0; color: var(--muted); font-size: 11px; line-height: 1.55; }
-.position-form { display: grid; grid-template-columns: minmax(0, 1fr) 92px auto; align-items: end; gap: 8px; }
+.position-form { display: grid; grid-template-columns: minmax(0, 1fr) 108px 92px auto; align-items: end; gap: 8px; }
 .position-form label { min-width: 0; }
 .position-form label span { display: block; margin-bottom: 7px; color: #777; font-size: 10px; }
-.position-form input { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #dedede; border-radius: 6px; background: #fff; color: #171717; font-size: 11px; }
-.position-form input:focus { outline: 1px solid #333; }
+.position-form input, .position-form select { width: 100%; height: 38px; padding: 0 10px; border: 1px solid #dedede; border-radius: 6px; background: #fff; color: #171717; font-size: 11px; }
+.position-form input:focus, .position-form select:focus { outline: 1px solid #333; }
 .position-form .primary-button { justify-content: center; height: 38px; }
 .position-message, .position-caveat { grid-column: 1 / -1; margin: 0; color: #777; font-size: 11px; line-height: 1.5; }
 .position-message { padding-top: 10px; border-top: 1px solid var(--line-soft); }
@@ -260,6 +260,9 @@ footer > span:last-child { color: #aaa; font-size: 10px; font-weight: 650; lette
   .section-heading { align-items: start; flex-direction: column; gap: 7px; margin-bottom: 17px; }
   .section-heading h2 { font-size: 21px; }
   .lab-section { padding-top: 0; }
+  .position-form { grid-template-columns: minmax(0, 1fr) 92px; }
+  .position-form label:first-child { grid-column: 1 / -1; }
+  .position-form .primary-button { grid-column: 1 / -1; }
   .analysis-tab-bar { gap: 19px; padding: 0 14px; }
   .analysis-tab-note { display: none; }
   .market-chart-content, .payoff-chart-content { padding: 18px 13px 0; }

@@ -14,11 +14,13 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Open [localhost:3000](http://localhost:3000). The BTC chart and scenario controls work without a key. To load Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), put it in `.env.local` as `JUPITER_API_KEY`, and restart the server. To import Velocity positions, `SOLANA_RPC_URL` can point to a mainnet RPC; the example uses Solana's public endpoint. API keys stay server-side, and `.env.local` is ignored by Git.
+Open [localhost:3000](http://localhost:3000). The BTC chart and scenario controls work without a key. To load Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), put it in `.env.local` as `JUPITER_API_KEY`, and restart the server. Position import supports Solana mainnet and devnet; `SOLANA_RPC_URL` and `DEVNET_RPC_URL` can override their public RPC endpoints. API keys stay server-side, and `.env.local` is ignored by Git.
+
+For the verified devnet demo, select **Devnet**, enter wallet `6qErjjbUwpvQmLyNknk3ZR58b64NvJaHM3b52WJrDkap` and subaccount `0`, then import its long `0.0001 BTC-PERP` position. The [demo runbook](docs/DEMO.md) has the recording steps.
 
 ## What works
 
-1. **Read a real position.** Enter a public Solana wallet address and Velocity subaccount number. EventLens reads its BTC-PERP size, side, entry, oracle price, unrealized P&L, funding P&L, account collateral, maintenance requirement, and health from Velocity's onchain SDK. No signature or private key is requested. The imported size, side, and entry become editable scenario inputs.
+1. **Read a real position.** Select devnet or mainnet, then enter a public Solana wallet address and Velocity subaccount number. EventLens reads its BTC-PERP size, side, entry, oracle price, unrealized P&L, funding P&L, account collateral, maintenance requirement, and health from Velocity's onchain SDK. No signature or private key is requested. The imported size, side, and entry become editable scenario inputs.
 2. **Inspect BTC and Forecast.** The chart uses live [Bitstamp BTC/USD](https://www.bitstamp.net/api/) spot trades and candles. [Jupiter Forecast](https://developers.jup.ag/docs/prediction/forecast) supplies scheduled and live 15-minute BTC UP/DOWN rounds; a live side is queried for an indicative contract quote when selected. A missing feed stays missing in the UI.
 3. **Size an offset.** The hedge panel chooses DOWN for a long perp or UP for a short one. It models an adverse close at least 3% from current spot that crosses the round's opening line, then sizes a $5–$250 stake against that price move. It shows the perp change alone, the change with a winning contract, and the maximum contract loss.
 
@@ -38,7 +40,7 @@ The opening BTC reference must be entered and checked by the user for the **spec
 | --- | --- |
 | `src/app/api/candles` | Bitstamp spot ticker and OHLC feed |
 | `src/app/api/markets` | Server-side Jupiter Forecast discovery and market detail |
-| `src/app/api/position` | Read-only Velocity mainnet position lookup |
+| `src/app/api/position` | Read-only Velocity devnet and mainnet position lookup |
 | `src/lib/scenario.ts` | Settlement payoff and illustrative margin |
 | `src/lib/hedge.ts` | Adverse-side sizing |
 

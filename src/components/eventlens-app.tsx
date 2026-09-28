@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import BtcMarketChart from "@/components/btc-market-chart";
 import { adverseSide, sizeHedge } from "@/lib/hedge";
 import type { ForecastMarket } from "@/lib/markets";
-import type { VelocityLookup, VelocityPosition } from "@/lib/velocity";
+import type { VelocityLookup, VelocityNetwork, VelocityPosition } from "@/lib/velocity";
 import {
   buildScenarioSeries,
   calculateScenario,
@@ -68,8 +68,8 @@ async function fetchMarketDetails(marketId: string): Promise<{ market: ForecastM
   return result;
 }
 
-async function fetchPosition(owner: string, subAccountId: number): Promise<VelocityLookup> {
-  const params = new URLSearchParams({ owner: owner.trim(), subaccount: String(subAccountId) });
+async function fetchPosition(owner: string, subAccountId: number, network: VelocityNetwork): Promise<VelocityLookup> {
+  const params = new URLSearchParams({ owner: owner.trim(), subaccount: String(subAccountId), network });
   const response = await fetch(`/api/position?${params}`, { cache: "no-store" });
   const result = await response.json();
   if (!response.ok) throw new Error(result.error ?? "Velocity position unavailable.");
@@ -192,6 +192,7 @@ export default function EventLensApp() {
   const [referenceNeeded, setReferenceNeeded] = useState(false);
   const [referenceConfirmed, setReferenceConfirmed] = useState(false);
   const [walletAddress, setWalletAddress] = useState("");
+  const [positionNetwork, setPositionNetwork] = useState<VelocityNetwork>("mainnet-beta");
   const [subAccountId, setSubAccountId] = useState(0);
   const [positionStatus, setPositionStatus] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [positionError, setPositionError] = useState("");
@@ -262,7 +263,7 @@ export default function EventLensApp() {
     setPositionStatus("loading");
     setPositionError("");
     try {
-      const lookup = await fetchPosition(walletAddress, subAccountId);
+      const lookup = await fetchPosition(walletAddress, subAccountId, positionNetwork);
       if (lookup.status !== "position") {
         setLivePosition(null);
         setPositionStatus("error");
@@ -419,16 +420,17 @@ export default function EventLensApp() {
             <div className="position-panel-copy">
               <span className="panel-kicker">READ-ONLY POSITION</span>
               <h3>Import from Velocity</h3>
-              <p>Enter a public wallet address to load its BTC-PERP position. No wallet connection or signature is required.</p>
+              <p>Enter a public wallet address to load its BTC-PERP position from devnet or mainnet. This read needs no signature.</p>
             </div>
             <form className="position-form" onSubmit={(event) => { event.preventDefault(); void importPosition(); }}>
               <label><span>Solana wallet address</span><input value={walletAddress} onChange={(event) => setWalletAddress(event.target.value)} placeholder="Wallet address" autoComplete="off" spellCheck={false} /></label>
+              <label><span>Network</span><select value={positionNetwork} onChange={(event) => { setPositionNetwork(event.target.value as VelocityNetwork); setLivePosition(null); }}><option value="mainnet-beta">Mainnet</option><option value="devnet">Devnet</option></select></label>
               <label className="subaccount-field"><span>Subaccount</span><input type="number" min="0" max="15" step="1" value={subAccountId} onChange={(event) => setSubAccountId(Number(event.target.value))} /></label>
               <button className="primary-button" type="submit" disabled={positionStatus === "loading"}>{positionStatus === "loading" ? "Reading…" : livePosition ? "Refresh position" : "Import position"}<span>↗</span></button>
             </form>
             {positionStatus === "error" && <p className="position-message" role="status">{positionError}</p>}
             {livePosition && <div className="position-summary">
-              <div><span>BTC-PERP</span><strong>{livePosition.direction.toUpperCase()} {livePosition.sizeBtc} BTC</strong><small>Entry {priceFormat.format(livePosition.entryPriceUsd)} · oracle {priceFormat.format(livePosition.oraclePriceUsd)}</small></div>
+              <div><span>BTC-PERP · {livePosition.network === "devnet" ? "DEVNET" : "MAINNET"}</span><strong>{livePosition.direction.toUpperCase()} {livePosition.sizeBtc} BTC</strong><small>Entry {priceFormat.format(livePosition.entryPriceUsd)} · oracle {priceFormat.format(livePosition.oraclePriceUsd)}</small></div>
               <div><span>ACCOUNT HEALTH</span><strong>{livePosition.accountHealth}/100</strong><small>Velocity maintenance health</small></div>
               <div><span>ACCOUNT COLLATERAL</span><strong>{usd.format(livePosition.accountCollateralUsd)}</strong><small>Maintenance requirement {usd.format(livePosition.accountMaintenanceUsd)}</small></div>
               <div><span>BTC POSITION P&L</span><strong className={pnlTone(livePosition.unrealizedPnlUsd)}>{signedUsd(livePosition.unrealizedPnlUsd)}</strong><small>Includes <b className={pnlTone(livePosition.fundingPnlUsd)}>{signedUsd(livePosition.fundingPnlUsd)}</b> funding · read {new Date(livePosition.fetchedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small></div>

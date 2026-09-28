@@ -2,6 +2,7 @@ import {
   loadVelocityPosition,
   parseVelocityLookup,
   type VelocityLookup,
+  type VelocityNetwork,
 } from "@/lib/velocity";
 
 export const runtime = "nodejs";
@@ -12,6 +13,10 @@ export async function GET(request: Request) {
   const params = new URL(request.url).searchParams;
   const ownerText = params.get("owner") ?? "";
   const subAccountId = Number(params.get("subaccount") ?? "0");
+  const network = params.get("network") ?? "mainnet-beta";
+  if (network !== "devnet" && network !== "mainnet-beta") {
+    return Response.json({ error: "Choose devnet or mainnet-beta." }, { status: 400 });
+  }
   let owner;
   try {
     owner = parseVelocityLookup(ownerText, subAccountId);
@@ -22,14 +27,14 @@ export async function GET(request: Request) {
     );
   }
 
-  const cacheKey = `${owner.toBase58()}:${subAccountId}`;
+  const cacheKey = `${network}:${owner.toBase58()}:${subAccountId}`;
   const cached = cache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return Response.json(cached.value, { headers: { "Cache-Control": "no-store" } });
   }
 
   try {
-    const value = await loadVelocityPosition(owner, subAccountId);
+    const value = await loadVelocityPosition(owner, subAccountId, network as VelocityNetwork);
     if (cache.size > 64) cache.clear();
     cache.set(cacheKey, { value, expiresAt: Date.now() + 20_000 });
     return Response.json(value, { headers: { "Cache-Control": "no-store" } });
