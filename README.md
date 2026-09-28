@@ -18,7 +18,7 @@ npm run dev
 
 Open [localhost:3000](http://localhost:3000). The BTC chart and scenario controls work without a key. To load Forecast rounds, create a free key in the [Jupiter Developer Portal](https://developers.jup.ag/portal), put it in `.env.local` as `JUPITER_API_KEY`, and restart the server. Position import supports Solana mainnet and devnet; `SOLANA_RPC_URL` and `DEVNET_RPC_URL` can override their public RPC endpoints. API keys stay server-side, and `.env.local` is ignored by Git.
 
-For the verified devnet demo, select **Devnet**, enter wallet `6qErjjbUwpvQmLyNknk3ZR58b64NvJaHM3b52WJrDkap` and subaccount `0`, then import its long `0.0001 BTC-PERP` position. The [demo runbook](docs/DEMO.md) has the recording steps.
+For the verified devnet demo, select **Devnet**, enter wallet `6qErjjbUwpvQmLyNknk3ZR58b64NvJaHM3b52WJrDkap` and subaccount `0`, then import its long `0.0001 BTC-PERP` position.
 
 ## What works
 
@@ -53,5 +53,3 @@ npm run lint
 npm run test:math
 npm run build
 ```
-
-For the product walkthrough and concise submission copy, see [demo runbook](docs/DEMO.md) and [submission draft](docs/SUBMISSION.md).
