@@ -403,6 +403,7 @@ export default function EventLensApp() {
             <div className="eyebrow">BTC PERPS &amp; FORECAST</div>
             <h1>One position.<span>Every outcome.</span></h1>
             <p>See how a BTC prediction contract could offset a perp drawdown—and where liquidation still breaks the hedge.</p>
+            <a className="hero-video-link" href="/eventlens-demo.mp4" target="_blank" rel="noopener noreferrer">Watch the 82-second demo <span aria-hidden="true">↗</span></a>
           </div>
         </section>
 

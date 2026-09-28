@@ -45,6 +45,8 @@ main { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
 .hero h1 { margin: 24px 0 20px; font-size: clamp(44px, 5.4vw, 70px); line-height: 1.06; font-weight: 760; letter-spacing: -3.8px; }
 .hero h1 span { display: block; color: #969696; font-weight: 430; }
 .hero p { max-width: 520px; margin: 0 auto; color: #5d5d5d; font-size: 15px; line-height: 1.7; }
+.hero-video-link { display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; padding: 11px 15px; border: 1px solid #171717; border-radius: 6px; background: #171717; color: #fff; font-size: 12px; font-weight: 650; }
+.hero-video-link:hover { background: #333; }
 
 .lab-section { padding-top: 12px; }
 .markets-section { padding-top: 56px; }
