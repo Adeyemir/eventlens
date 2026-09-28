@@ -30,4 +30,6 @@ EventLens does not execute trades, quote a stake-specific order, or independentl
 
 Live app: [eventlens-nu.vercel.app](https://eventlens-nu.vercel.app)
 
-Add the video URL after recording. Follow [DEMO.md](DEMO.md) for the walkthrough.
+Video walkthrough: [eventlens-nu.vercel.app/eventlens-demo.mp4](https://eventlens-nu.vercel.app/eventlens-demo.mp4)
+
+The video imports a verified long `0.0001 BTC-PERP` position from Velocity devnet using public wallet `6qErjjbUwpvQmLyNknk3ZR58b64NvJaHM3b52WJrDkap`, subaccount `0`. It then changes the size to `0.005 BTC` as a clearly labeled what-if scenario to demonstrate hedge sizing. Follow [DEMO.md](DEMO.md) for the walkthrough.

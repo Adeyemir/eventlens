@@ -6,6 +6,8 @@ EventLens answers one practical question: if a BTC perpetual position moves agai
 
 **Live demo:** [eventlens-nu.vercel.app](https://eventlens-nu.vercel.app)
 
+**Video walkthrough:** [Watch the 82-second demo](https://eventlens-nu.vercel.app/eventlens-demo.mp4)
+
 ## Try it locally
 
 ```bash
